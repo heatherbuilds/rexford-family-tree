@@ -85,8 +85,64 @@ header p { font-size:.75rem; opacity:.65; margin-top:3px; letter-spacing:.07em; 
 .connector { position:relative; width:100%; }
 .connector svg { display:block; overflow:visible; }
 
-/* birthday */
-.bday-section { background:var(--male); color:var(--male-text); padding:30px 18px 40px; margin-top:4px; }
+/* ── SUGGEST A CHANGE ── */
+.suggest-btn {
+  position: fixed; bottom: 24px; right: 20px; z-index: 500;
+  background: var(--accent); color: var(--male-text);
+  font-family: 'Lato', sans-serif; font-size: .8rem;
+  letter-spacing: .06em; text-transform: uppercase;
+  border: none; border-radius: 24px; padding: 12px 20px;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  transition: background .15s, transform .12s;
+}
+.suggest-btn:hover { background: #5a3610; }
+.suggest-btn:active { transform: scale(.96); }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 600;
+  background: rgba(0,0,0,0.55); align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: #fdf6ec; border-radius: 14px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.modal-head {
+  background: var(--male); color: var(--male-text);
+  padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+}
+.modal-head h3 { font-family: 'Playfair Display', serif; font-size: 1rem; letter-spacing: .03em; }
+.modal-close {
+  background: none; border: none; color: var(--male-text);
+  font-size: 1.3rem; cursor: pointer; opacity: .7; padding: 0 4px; line-height: 1;
+}
+.modal-close:hover { opacity: 1; }
+.modal-body { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+.modal-body label { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 700; display: block; margin-bottom: 4px; }
+.modal-body input, .modal-body textarea, .modal-body select {
+  width: 100%; border: 1.5px solid #c8a878; border-radius: 7px;
+  padding: 9px 11px; font-family: 'Lato', sans-serif; font-size: .85rem;
+  background: #fff; color: #2a1a05;
+  transition: border-color .15s;
+}
+.modal-body input:focus, .modal-body textarea:focus, .modal-body select:focus {
+  outline: none; border-color: var(--accent);
+}
+.modal-body textarea { resize: vertical; min-height: 90px; }
+.modal-send {
+  background: var(--accent); color: var(--male-text);
+  border: none; border-radius: 8px; padding: 11px;
+  font-family: 'Lato', sans-serif; font-size: .82rem;
+  letter-spacing: .07em; text-transform: uppercase;
+  cursor: pointer; transition: background .15s;
+  margin-top: 4px;
+}
+.modal-send:hover { background: #5a3610; }
+.modal-note { font-size: .7rem; color: #888; text-align: center; margin-top: -6px; } background:var(--male); color:var(--male-text); padding:30px 18px 40px; margin-top:4px; }
 .bday-section h2 { font-family:'Playfair Display',serif; font-size:clamp(1rem,3vw,1.5rem); text-align:center; margin-bottom:22px; letter-spacing:.04em; }
 .bday-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; max-width:960px; margin:0 auto; }
 .bday-month { background:rgba(255,255,255,.07); border:1px solid rgba(200,168,120,.3); border-radius:10px; overflow:hidden; }
@@ -591,6 +647,67 @@ buildBdays();
 
 window.addEventListener('load',()=>setTimeout(drawAll,300));
 window.addEventListener('resize',()=>setTimeout(drawAll,100));
+</script>
+
+<!-- ── SUGGEST A CHANGE BUTTON ── -->
+<button class="suggest-btn" onclick="openModal()">✏️ Suggest a Change</button>
+
+<!-- ── MODAL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Suggest a Change</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label>Your Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Jim Rexford">
+      </div>
+      <div>
+        <label>Who is this about?</label>
+        <input type="text" id="f-person" placeholder="e.g. Terry Rexford">
+      </div>
+      <div>
+        <label>What needs to change?</label>
+        <select id="f-type">
+          <option value="Birthday / Birth year">Birthday / Birth year</option>
+          <option value="Name correction">Name correction</option>
+          <option value="Missing person">Missing person</option>
+          <option value="Marriage / relationship">Marriage / relationship</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Details</label>
+        <textarea id="f-details" placeholder="e.g. Terry's birthday is actually March 3, 1943"></textarea>
+      </div>
+      <button class="modal-send" onclick="sendSuggestion()">Send to Heather →</button>
+      <p class="modal-note">This will open your email app with everything filled in.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function openModal(){ document.getElementById('modalOverlay').classList.add('open'); }
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function closeOnOverlay(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+function sendSuggestion(){
+  const name = document.getElementById('f-name').value.trim() || 'A family member';
+  const person = document.getElementById('f-person').value.trim() || 'Unknown';
+  const type = document.getElementById('f-type').value;
+  const details = document.getElementById('f-details').value.trim() || 'No details provided.';
+  const subject = encodeURIComponent(`Rexford Family Tree – ${type}: ${person}`);
+  const body = encodeURIComponent(
+    `Hi Heather,\n\nI have a suggestion for the family tree:\n\n` +
+    `Submitted by: ${name}\n` +
+    `Person this is about: ${person}\n` +
+    `Type of change: ${type}\n\n` +
+    `Details:\n${details}\n\n` +
+    `Thanks!`
+  );
+  window.location.href = `mailto:hkr007mayfield@gmail.com?subject=${subject}&body=${body}`;
+}
 </script>
 </body>
 </html>
