@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>The Rexford Family Tree</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --male: #3e2a10;
+  --male-text: #f5e6cc;
+  --female: #c8a878;
+  --female-text: #2a1a05;
+  --bg: #fdf6ec;
+  --bg2: #f0e4cc;
+  --accent: #7a4e1e;
+  --line: #7a4e1e;
+  --cw: 118px;
+  --ch: 56px;
+  --mbar: 22px;
+  --vgap: 60px;
+  --hgap: 18px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lato', sans-serif; background: var(--bg); color: #2a1a05; min-height: 100vh; }
+
+header {
+  background: var(--male); color: var(--male-text);
+  text-align: center; padding: 20px 16px 16px;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+}
+header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.2rem,4vw,1.9rem); letter-spacing:.04em; }
+header p { font-size:.75rem; opacity:.65; margin-top:3px; letter-spacing:.07em; text-transform:uppercase; }
+.bday-btns { display:flex; justify-content:center; gap:10px; margin-top:10px; }
+.bday-btn {
+  background:rgba(255,255,255,0.15); color:var(--male-text);
+  border:1px solid rgba(255,255,255,0.3); border-radius:20px;
+  padding:5px 16px; font-family:'Lato',sans-serif; font-size:.72rem;
+  letter-spacing:.06em; text-transform:uppercase; cursor:pointer;
+  transition:background .15s;
+}
+.bday-btn:hover, .bday-btn:active { background:rgba(255,255,255,0.28); }
+
+.legend {
+  display:flex; flex-wrap:wrap; justify-content:center; gap:12px 22px;
+  padding:10px 16px; background:var(--bg2); border-bottom:2px solid #c8a878;
+  font-size:.72rem; letter-spacing:.04em;
+}
+.legend-item { display:flex; align-items:center; gap:6px; }
+.lbox { width:18px; height:12px; border-radius:3px; border:1px solid rgba(0,0,0,.2); }
+.lline { width:26px; border-top:3px solid var(--line); }
+.lline.dot { border-top:3px dashed var(--line); }
+.lline.mar { border-top:4px solid var(--accent); width:18px; }
+
+.outer { overflow-x:auto; overflow-y:visible; padding:0 20px 40px; -webkit-overflow-scrolling:touch; }
+
+.tree-root {
+  display:flex; flex-direction:column; align-items:center;
+  min-width:max-content; padding-top:30px;
+}
+
+.row { display:flex; align-items:flex-start; justify-content:center; gap:var(--hgap); }
+.col { display:flex; flex-direction:column; align-items:center; }
+
+.couple { display:flex; align-items:center; }
+.mbar { width:var(--mbar); height:4px; background:var(--accent); flex-shrink:0; }
+
+/* sibling bracket — dashed bar connecting sibling to family member */
+.sib-bar { width:var(--mbar); height:4px; background:var(--accent); flex-shrink:0; opacity:0.5; border-top:4px dashed var(--accent); background:none; }
+
+.card {
+  width:var(--cw); min-height:var(--ch);
+  border-radius:8px; padding:7px 9px;
+  cursor:pointer; user-select:none; -webkit-tap-highlight-color:transparent;
+  transition:transform .12s, box-shadow .12s; position:relative;
+}
+.card:active { transform:scale(.95); }
+.card.male { background:var(--male); color:var(--male-text); box-shadow:0 3px 8px rgba(62,42,16,.38); }
+.card.female { background:var(--female); color:var(--female-text); box-shadow:0 3px 8px rgba(62,42,16,.22); }
+.cn { font-family:'Playfair Display',serif; font-size:.74rem; font-weight:600; line-height:1.3; display:block; }
+.cb { font-size:.64rem; font-weight:300; margin-top:3px; display:none; opacity:.85; }
+.card.open .cb { display:block; }
+
+.connector { position:relative; width:100%; }
+.connector svg { display:block; overflow:visible; }
+
+/* birthday */
+.bday-section { background:var(--male); color:var(--male-text); padding:30px 18px 40px; margin-top:4px; }
+.bday-section h2 { font-family:'Playfair Display',serif; font-size:clamp(1rem,3vw,1.5rem); text-align:center; margin-bottom:22px; letter-spacing:.04em; }
+.bday-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; max-width:960px; margin:0 auto; }
+.bday-month { background:rgba(255,255,255,.07); border:1px solid rgba(200,168,120,.3); border-radius:10px; overflow:hidden; }
+.bday-mname { background:rgba(200,168,120,.2); font-family:'Playfair Display',serif; font-size:.88rem; padding:7px 13px; border-bottom:1px solid rgba(200,168,120,.2); letter-spacing:.05em; }
+.bday-list { padding:7px 13px 11px; }
+.bday-entry { display:flex; align-items:center; font-size:.76rem; padding:4px 0; border-bottom:1px solid rgba(255,255,255,.06); }
+.bday-entry:last-child { border-bottom:none; }
+.bday-day { font-weight:700; color:var(--female); min-width:28px; }
+.bday-name { flex:1; padding:0 7px; }
+.bday-empty { font-size:.7rem; opacity:.4; font-style:italic; padding:5px 0; }
+
+@media(max-width:600px){
+  :root { --cw:100px; --ch:52px; --mbar:16px; --hgap:12px; --vgap:50px; }
+  .cn { font-size:.67rem; } .cb { font-size:.59rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>The Rexford Family</h1>
+  <p>Tap any card to see their birthday</p>
+  <div class="bday-btns">
+    <button class="bday-btn" onclick="showAllBdays()">Show All Birthdays</button>
+    <button class="bday-btn" onclick="hideAllBdays()">Hide All Birthdays</button>
+  </div>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="lbox" style="background:#3e2a10"></div><span>Male</span></div>
+  <div class="legend-item"><div class="lbox" style="background:#c8a878"></div><span>Female</span></div>
+  <div class="legend-item"><div class="lline mar"></div><span>Married</span></div>
+  <div class="legend-item"><div class="lline"></div><span>Child</span></div>
+  <div class="legend-item"><div class="lline dot"></div><span>Foster child</span></div>
+</div>
+
+<div class="outer" id="outerScroll">
+<div class="tree-root" id="treeRoot">
+
+<!-- ══════════════════════════════════════════════════════
+     ROW 0 — Grandparent couples (no children yet)
+══════════════════════════════════════════════════════ -->
+<div id="row-gp" style="position:relative; width:100%; height:68px; min-height:var(--ch);">
+  <div class="couple" id="millard-eva" style="position:absolute; white-space:nowrap;">
+    <div class="card male" id="c-millard" onclick="tc(this)"><span class="cn">Millard Rexford</span><span class="cb">No birthday on file</span></div>
+    <div class="mbar"></div>
+    <div class="card female" id="c-eva" onclick="tc(this)"><span class="cn">Eva Rexford</span><span class="cb">No birthday on file</span></div>
+  </div>
+  <div class="couple" id="frank-florrie" style="position:absolute; white-space:nowrap;">
+    <div class="card male" id="c-frank" onclick="tc(this)"><span class="cn">Frank Fili</span><span class="cb">No birthday on file</span></div>
+    <div class="mbar"></div>
+    <div class="card female" id="c-florrie" onclick="tc(this)"><span class="cn">Florrie Fili</span><span class="cb">No birthday on file</span></div>
+  </div>
+</div><!-- /row-gp -->
+
+<!-- connector gp → their children rows -->
+<div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+  <svg id="svg-gp-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ROW 1 — All gen-1 children in one continuous row:
+     [Rexford sibs] — Joel ══ Sharon — [Fili sibs]
+     Joel is last Rexford child; Sharon is first Fili child.
+     Each gets their own parent line above.
+══════════════════════════════════════════════════════ -->
+<div class="row" id="row-gen1" style="gap:var(--hgap); align-items:flex-start;">
+
+  <!-- Charlie -->
+  <div class="col">
+    <div class="card male" id="c-charlie" onclick="tc(this)"><span class="cn">Charlie Rexford</span><span class="cb">b. Aug 25, 1940</span></div>
+  </div>
+
+  <!-- Terry -->
+  <div class="col">
+    <div class="card male" id="c-terry" onclick="tc(this)"><span class="cn">Terry Rexford</span><span class="cb">b. Sep 3, 1943</span></div>
+  </div>
+
+  <!-- Judith + Bill Scott -->
+  <div class="col">
+    <div class="couple" id="judith-bill">
+      <div class="card female" id="c-judith" onclick="tc(this)"><span class="cn">Judith Scott</span><span class="cb">b. Mar 1</span></div>
+      <div class="mbar"></div>
+      <div class="card male" id="c-bill-scott" onclick="tc(this)"><span class="cn">Bill Scott</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+  <!-- Carolyn + Dan Fogg -->
+  <div class="col">
+    <div class="couple" id="carolyn-dan">
+      <div class="card female" id="c-carolyn" onclick="tc(this)"><span class="cn">Carolyn Fogg</span><span class="cb">b. Oct 16, 1947</span></div>
+      <div class="mbar"></div>
+      <div class="card male" id="c-dan-fogg" onclick="tc(this)"><span class="cn">Dan Fogg</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+  <!-- ══ JOEL ══ SHARON ══ marriage bridge between the two families -->
+  <div class="col" id="col-joel-sharon-bridge">
+    <div class="couple" id="joel-sharon">
+      <div class="card male" id="c-joel" onclick="tc(this)"><span class="cn">Joel Rexford</span><span class="cb">b. Mar 1, 1946</span></div>
+      <div class="mbar" style="width:32px;"></div>
+      <div class="card female" id="c-sharon" onclick="tc(this)"><span class="cn">Sharon Rexford</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+  <!-- Betty + Jim Miles -->
+  <div class="col">
+    <div class="couple" id="betty-jim">
+      <div class="card female" id="c-betty" onclick="tc(this)"><span class="cn">Betty Miles</span><span class="cb">No birthday on file</span></div>
+      <div class="mbar"></div>
+      <div class="card male" id="c-jim-miles" onclick="tc(this)"><span class="cn">Jim Miles</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+  <!-- Fran + Hartsel McSwain -->
+  <div class="col">
+    <div class="couple" id="fran-hartsel">
+      <div class="card female" id="c-fran" onclick="tc(this)"><span class="cn">Fran McSwain</span><span class="cb">No birthday on file</span></div>
+      <div class="mbar"></div>
+      <div class="card male" id="c-hartsel" onclick="tc(this)"><span class="cn">Hartsel McSwain</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+  <!-- John Fili -->
+  <div class="col">
+    <div class="card male" id="c-john-fili" onclick="tc(this)"><span class="cn">John Fili</span><span class="cb">No birthday on file</span></div>
+  </div>
+
+  <!-- Ria + Bill York -->
+  <div class="col">
+    <div class="couple" id="ria-bill">
+      <div class="card female" id="c-ria" onclick="tc(this)"><span class="cn">Ria York</span><span class="cb">b. Mar 13</span></div>
+      <div class="mbar"></div>
+      <div class="card male" id="c-bill-york" onclick="tc(this)"><span class="cn">Bill York</span><span class="cb">No birthday on file</span></div>
+    </div>
+  </div>
+
+</div><!-- /row-gen1 -->
+
+<!-- connector Joel & Sharon → their children -->
+<div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+  <svg id="svg-root-g2" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ROW 2 — Jim branch | Daniel branch
+══════════════════════════════════════════════════════ -->
+<div class="row" id="row-g2" style="gap:60px; align-items:flex-start;">
+
+  <!-- ── JIM BRANCH ── -->
+  <div class="col" id="col-jim-branch">
+    <div class="couple" id="jim-ame">
+      <div class="card male" id="c-jim" onclick="tc(this)"><span class="cn">Jim Rexford</span><span class="cb">b. Jun 16, 1969</span></div>
+      <div class="mbar"></div>
+      <div class="card female" id="c-ame" onclick="tc(this)"><span class="cn">Ame Rexford</span><span class="cb">b. Dec 16, 1968</span></div>
+    </div>
+    <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+      <svg id="svg-jim-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+    </div>
+    <div class="row" id="row-jim-kids" style="gap:var(--hgap); align-items:flex-start;">
+
+      <div class="col">
+        <div class="card male" id="c-edgar" onclick="tc(this)"><span class="cn">Edgar Thompson</span><span class="cb">b. Nov 27, 1989</span></div>
+      </div>
+
+      <div class="col">
+        <div class="couple" id="joshua-tabitha">
+          <div class="card male" id="c-joshua" onclick="tc(this)"><span class="cn">Joshua Rexford</span><span class="cb">b. Feb 4, 1993</span></div>
+          <div class="mbar"></div>
+          <div class="card female" id="c-tabitha" onclick="tc(this)"><span class="cn">Tabitha Rexford</span><span class="cb">b. May 16, 1991</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-josh-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card male" id="c-japheth" onclick="tc(this)"><span class="cn">Japheth Rexford</span><span class="cb">b. Jun 18, 2017</span></div></div>
+          <div class="col"><div class="card female" id="c-avonlea" onclick="tc(this)"><span class="cn">Avonlea Rexford</span><span class="cb">b. Dec 8, 2019</span></div></div>
+          <div class="col"><div class="card male" id="c-lazarus" onclick="tc(this)"><span class="cn">Lazarus Rexford</span><span class="cb">b. May 3, 2024</span></div></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="couple" id="peter-alex">
+          <div class="card male" id="c-peter" onclick="tc(this)"><span class="cn">Peter Rexford</span><span class="cb">b. Mar 24, 1996</span></div>
+          <div class="mbar"></div>
+          <div class="card female" id="c-alex" onclick="tc(this)"><span class="cn">Alex Rexford</span><span class="cb">b. May 14, 1994</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-peter-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card female" id="c-charlee" onclick="tc(this)"><span class="cn">Charlee Rexford</span><span class="cb">No birthday on file</span></div></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="couple" id="emily-silas">
+          <div class="card female" id="c-emily" onclick="tc(this)"><span class="cn">Emily Leupold</span><span class="cb">b. Sep 4, 1998</span></div>
+          <div class="mbar"></div>
+          <div class="card male" id="c-silas" onclick="tc(this)"><span class="cn">Silas Leupold</span><span class="cb">b. Mar 22, 1993</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-emily-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card male" id="c-gideon" onclick="tc(this)"><span class="cn">Gideon Leupold</span><span class="cb">b. Sep 7, 2019</span></div></div>
+          <div class="col"><div class="card male" id="c-simon" onclick="tc(this)"><span class="cn">Simon Leupold</span><span class="cb">b. Oct 4, 2023</span></div></div>
+          <div class="col"><div class="card female" id="c-annaspencer" onclick="tc(this)"><span class="cn">Anna Spencer Leupold</span><span class="cb">b. Nov 16, 2024</span></div></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card female" id="c-audrey" onclick="tc(this)"><span class="cn">Audrey Rexford</span><span class="cb">b. Oct 28, 2002</span></div>
+      </div>
+
+    </div><!-- /row-jim-kids -->
+  </div><!-- /col-jim-branch -->
+
+  <!-- ── DANIEL BRANCH ── -->
+  <div class="col" id="col-daniel-branch">
+    <div class="couple" id="daniel-brandi">
+      <div class="card male" id="c-daniel" onclick="tc(this)"><span class="cn">Daniel Rexford</span><span class="cb">b. Aug 14, 1972</span></div>
+      <div class="mbar"></div>
+      <div class="card female" id="c-brandi" onclick="tc(this)"><span class="cn">Brandi Rexford</span><span class="cb">b. Feb 24, 1976</span></div>
+    </div>
+
+    <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+      <svg id="svg-daniel-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+    </div>
+
+    <div class="row" id="row-daniel-kids" style="gap:var(--hgap); align-items:flex-start;">
+
+      <div class="col">
+        <div class="couple" id="heather-brett">
+          <div class="card female" id="c-heather" onclick="tc(this)"><span class="cn">Heather Mayfield</span><span class="cb">b. Jan 8, 1994</span></div>
+          <div class="mbar"></div>
+          <div class="card male" id="c-brett" onclick="tc(this)"><span class="cn">Brett Mayfield</span><span class="cb">b. Nov 16, 1992</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-heather-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card female" id="c-olivia" onclick="tc(this)"><span class="cn">Olivia Mayfield</span><span class="cb">b. Jul 8, 2022</span></div></div>
+        </div>
+      </div>
+
+      <!-- Ryan & Ericka: no marriage bar, just two cards side by side, children below midpoint -->
+      <div class="col" id="col-ryan-ericka">
+        <div id="ryan-ericka" style="display:flex; align-items:center; gap:var(--hgap);">
+          <div class="card male" id="c-ryan" onclick="tc(this)"><span class="cn">Ryan Rexford</span><span class="cb">b. Oct 24, 1995</span></div>
+          <div class="card female" id="c-ericka" onclick="tc(this)"><span class="cn">Ericka Rexford</span><span class="cb">b. Jan 22</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-ryan-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card female" id="c-hazel" onclick="tc(this)"><span class="cn">Hazel Rexford</span><span class="cb">b. Apr 24, 2019</span></div></div>
+          <div class="col"><div class="card female" id="c-harper" onclick="tc(this)"><span class="cn">Harper Rexford</span><span class="cb">b. Mar 11, 2022</span></div></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="couple" id="bryson-jo">
+          <div class="card male" id="c-bryson" onclick="tc(this)"><span class="cn">Bryson Rexford</span><span class="cb">b. Dec 26, 2001</span></div>
+          <div class="mbar"></div>
+          <div class="card female" id="c-jo" onclick="tc(this)"><span class="cn">Jo Rexford</span><span class="cb">No birthday on file</span></div>
+        </div>
+        <div class="connector" style="height:var(--vgap);width:100%;position:relative;">
+          <svg id="svg-bryson-kids" style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible;pointer-events:none;"></svg>
+        </div>
+        <div class="row" style="gap:var(--hgap);">
+          <div class="col"><div class="card female" id="c-sienna" onclick="tc(this)"><span class="cn">Sienna Rexford</span><span class="cb">b. Apr 6, 2026</span></div></div>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="card male" id="c-brent" onclick="tc(this)"><span class="cn">Brent Gault</span><span class="cb">b. Jul 26, 2008</span></div>
+      </div>
+
+      <div class="col">
+        <div class="card male" id="c-jordan" onclick="tc(this)"><span class="cn">Jordan Gault</span><span class="cb">b. Dec 13, 2019</span></div>
+      </div>
+
+    </div><!-- /row-daniel-kids -->
+  </div><!-- /col-daniel-branch -->
+
+</div><!-- /row-g2 -->
+</div><!-- /tree-root -->
+</div><!-- /outer -->
+
+<div class="bday-section">
+  <h2>🎂 Birthday Calendar</h2>
+  <div class="bday-grid" id="bdayGrid"></div>
+</div>
+
+<script>
+function tc(card){ card.classList.toggle('open'); }
+
+function rel(el, svg){
+  const er=el.getBoundingClientRect(), sr=svg.getBoundingClientRect();
+  const l=er.left-sr.left, t=er.top-sr.top;
+  return { l, t, r:l+er.width, b:t+er.height, mx:l+er.width/2, my:t+er.height/2, w:er.width, h:er.height };
+}
+
+function ln(svg, x1,y1,x2,y2, dotted){
+  const l=document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('stroke','#7a4e1e'); l.setAttribute('stroke-width','2');
+  if(dotted) l.setAttribute('stroke-dasharray','5 4');
+  svg.appendChild(l);
+}
+
+function bus(svgEl, parentEl, childEls, dotArr){
+  if(!parentEl||!childEls.length||childEls.some(c=>!c)) return;
+  const p=rel(parentEl,svgEl);
+  const cs=childEls.map(c=>rel(c,svgEl));
+  const busY=p.b+(cs[0].t-p.b)*0.45;
+  ln(svgEl,p.mx,p.b,p.mx,busY);
+  const minX=Math.min(...cs.map(c=>c.mx)), maxX=Math.max(...cs.map(c=>c.mx));
+  if(minX!==maxX) ln(svgEl,minX,busY,maxX,busY);
+  cs.forEach((c,i)=>{ const d=Array.isArray(dotArr)?dotArr[i]:!!dotArr; ln(svgEl,c.mx,busY,c.mx,c.t,d); });
+}
+
+function elbow(svgEl,pEl,cEl,dotted){
+  if(!pEl||!cEl) return;
+  const p=rel(pEl,svgEl), c=rel(cEl,svgEl);
+  const mid=p.b+(c.t-p.b)*0.5;
+  ln(svgEl,p.mx,p.b,p.mx,mid,dotted); ln(svgEl,p.mx,mid,c.mx,mid,dotted); ln(svgEl,c.mx,mid,c.mx,c.t,dotted);
+}
+
+function $$(id){ return document.getElementById(id); }
+
+function positionGrandparents(){
+  const trRect=document.getElementById('treeRoot').getBoundingClientRect();
+  const gpRow=document.getElementById('row-gp');
+
+  function groupMidX(ids){
+    const els=ids.map(id=>document.getElementById(id)).filter(Boolean);
+    if(!els.length) return 0;
+    const rects=els.map(e=>e.getBoundingClientRect());
+    const minL=Math.min(...rects.map(r=>r.left));
+    const maxR=Math.max(...rects.map(r=>r.right));
+    return (minL+maxR)/2 - trRect.left;
+  }
+
+  const rexMid=groupMidX(['c-charlie','c-terry','c-judith','c-carolyn','c-joel']);
+  const filiMid=groupMidX(['c-sharon','c-betty','c-fran','c-john-fili','c-ria']);
+
+  const me=document.getElementById('millard-eva');
+  const ff=document.getElementById('frank-florrie');
+  if(me){ me.style.left=(rexMid - me.offsetWidth/2)+'px'; me.style.top='0px'; }
+  if(ff){ ff.style.left=(filiMid - ff.offsetWidth/2)+'px'; ff.style.top='0px'; }
+  const maxH=Math.max(me?me.offsetHeight:60, ff?ff.offsetHeight:60);
+  gpRow.style.height=(maxH+4)+'px';
+}
+
+function drawAll(){
+  positionGrandparents();
+
+  // ── Millard & Eva → Charlie, Terry, Judith, Carolyn, Joel ──
+  // ── Frank & Florrie → Sharon, Betty, Fran, John, Ria ──
+  {
+    const svg=$$('svg-gp-kids'); svg.innerHTML='';
+
+    const me=$$('millard-eva');
+    const rexKids=[$$('c-charlie'),$$('c-terry'),$$('c-judith'),$$('c-carolyn'),$$('c-joel')];
+    if(me && rexKids.every(Boolean)){
+      const p=rel(me,svg);
+      const cs=rexKids.map(c=>rel(c,svg));
+      const busY=p.b+(cs[0].t-p.b)*0.45;
+      ln(svg,p.mx,p.b,p.mx,busY);
+      ln(svg,Math.min(...cs.map(c=>c.mx)),busY,Math.max(...cs.map(c=>c.mx)),busY);
+      cs.forEach(c=>ln(svg,c.mx,busY,c.mx,c.t));
+    }
+
+    const ff=$$('frank-florrie');
+    const filiKids=[$$('c-sharon'),$$('c-betty'),$$('c-fran'),$$('c-john-fili'),$$('c-ria')];
+    if(ff && filiKids.every(Boolean)){
+      const p=rel(ff,svg);
+      const cs=filiKids.map(c=>rel(c,svg));
+      const busY=p.b+(cs[0].t-p.b)*0.45;
+      ln(svg,p.mx,p.b,p.mx,busY);
+      ln(svg,Math.min(...cs.map(c=>c.mx)),busY,Math.max(...cs.map(c=>c.mx)),busY);
+      cs.forEach(c=>ln(svg,c.mx,busY,c.mx,c.t));
+    }
+  }
+
+  // ── Joel & Sharon → Jim & Daniel ──
+  {
+    const svg=$$('svg-root-g2'); svg.innerHTML='';
+    const couple=$$('joel-sharon'), j=$$('c-jim'), d=$$('c-daniel');
+    if(couple&&j&&d){
+      const p=rel(couple,svg), jr=rel(j,svg), dr=rel(d,svg);
+      const busY=p.b+(jr.t-p.b)*0.45;
+      ln(svg,p.mx,p.b,p.mx,busY);
+      ln(svg,jr.mx,busY,dr.mx,busY);
+      ln(svg,jr.mx,busY,jr.mx,jr.t);
+      ln(svg,dr.mx,busY,dr.mx,dr.t);
+    }
+  }
+
+  // ── Jim & Ame → their 5 kids ──
+  { const svg=$$('svg-jim-kids'); svg.innerHTML='';
+    bus(svg,$$('jim-ame'),[$$('c-edgar'),$$('c-joshua'),$$('c-peter'),$$('c-emily'),$$('c-audrey')],false); }
+
+  // ── Joshua & Tabitha → kids ──
+  { const svg=$$('svg-josh-kids'); svg.innerHTML='';
+    bus(svg,$$('joshua-tabitha'),[$$('c-japheth'),$$('c-avonlea'),$$('c-lazarus')],false); }
+
+  // ── Peter & Alex → Charlee ──
+  { const svg=$$('svg-peter-kids'); svg.innerHTML=''; elbow(svg,$$('peter-alex'),$$('c-charlee')); }
+
+  // ── Emily & Silas → kids ──
+  { const svg=$$('svg-emily-kids'); svg.innerHTML='';
+    bus(svg,$$('emily-silas'),[$$('c-gideon'),$$('c-simon'),$$('c-annaspencer')],false); }
+
+  // ── Daniel & Brandi → bio + foster kids ──
+  { const svg=$$('svg-daniel-kids'); svg.innerHTML='';
+    bus(svg,$$('daniel-brandi'),
+      [$$('c-heather'),$$('c-ryan'),$$('c-bryson'),$$('c-brent'),$$('c-jordan')],
+      [false,false,false,true,true]); }
+
+  // ── Heather & Brett → Olivia ──
+  { const svg=$$('svg-heather-kids'); svg.innerHTML=''; elbow(svg,$$('heather-brett'),$$('c-olivia')); }
+
+  // ── Ryan & Ericka (no marriage) → Hazel, Harper — drop from midpoint between their two cards ──
+  { const svg=$$('svg-ryan-kids'); svg.innerHTML='';
+    const ryanEl=$$('c-ryan'), erickaEl=$$('c-ericka');
+    const hazel=$$('c-hazel'), harper=$$('c-harper');
+    if(ryanEl&&erickaEl&&hazel&&harper){
+      const rr=rel(ryanEl,svg), er=rel(erickaEl,svg);
+      const fakeMx=(rr.mx+er.mx)/2, fakeBy=Math.max(rr.b,er.b);
+      const cs=[rel(hazel,svg),rel(harper,svg)];
+      const busY=fakeBy+(cs[0].t-fakeBy)*0.45;
+      ln(svg,fakeMx,fakeBy,fakeMx,busY);
+      ln(svg,cs[0].mx,busY,cs[1].mx,busY);
+      cs.forEach(c=>ln(svg,c.mx,busY,c.mx,c.t));
+    }
+  }
+
+  // ── Bryson & Jo → Sienna ──
+  { const svg=$$('svg-bryson-kids'); svg.innerHTML=''; elbow(svg,$$('bryson-jo'),$$('c-sienna')); }
+}
+
+function showAllBdays(){ document.querySelectorAll('.card').forEach(c=>c.classList.add('open')); }
+function hideAllBdays(){ document.querySelectorAll('.card').forEach(c=>c.classList.remove('open')); }
+
+// Birthday calendar
+const bdays=[
+  {n:"Ericka Rexford",d:"Jan 22"},{n:"Heather Mayfield",d:"Jan 8, 1994"},
+  {n:"Brandi Rexford",d:"Feb 24, 1976"},{n:"Joshua Rexford",d:"Feb 4, 1993"},
+  {n:"Silas Leupold",d:"Mar 22, 1993"},{n:"Peter Rexford",d:"Mar 24, 1996"},
+  {n:"Joel Rexford",d:"Mar 1, 1946"},{n:"Judith Scott",d:"Mar 1"},
+  {n:"Ria York",d:"Mar 13"},{n:"Harper Rexford",d:"Mar 11, 2022"},
+  {n:"Hazel Rexford",d:"Apr 24, 2019"},{n:"Sienna Rexford",d:"Apr 6, 2026"},
+  {n:"Alex Rexford",d:"May 14, 1994"},{n:"Tabitha Rexford",d:"May 16, 1991"},
+  {n:"Lazarus Rexford",d:"May 3, 2024"},{n:"Japheth Rexford",d:"Jun 18, 2017"},
+  {n:"Jim Rexford",d:"Jun 16, 1969"},{n:"Olivia Mayfield",d:"Jul 8, 2022"},
+  {n:"Brent Gault",d:"Jul 26, 2008"},
+  {n:"Daniel Rexford",d:"Aug 14, 1972"},{n:"Charlie Rexford",d:"Aug 25, 1940"},
+  {n:"Gideon Leupold",d:"Sep 7, 2019"},{n:"Terry Rexford",d:"Sep 3, 1943"},
+  {n:"Emily Leupold",d:"Sep 4, 1998"},{n:"Carolyn Fogg",d:"Oct 16, 1947"},
+  {n:"Audrey Rexford",d:"Oct 28, 2002"},{n:"Ryan Rexford",d:"Oct 24, 1995"},
+  {n:"Simon Leupold",d:"Oct 4, 2023"},
+  {n:"Brett Mayfield",d:"Nov 16, 1992"},{n:"Anna Spencer Leupold",d:"Nov 16, 2024"},
+  {n:"Edgar Thompson",d:"Nov 27, 1989"},{n:"Ame Rexford",d:"Dec 16, 1968"},
+  {n:"Avonlea Rexford",d:"Dec 8, 2019"},{n:"Jordan Gault",d:"Dec 13, 2019"},
+  {n:"Bryson Rexford",d:"Dec 26, 2001"},
+];
+const mnames=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function gmd(d){
+  if(!d) return null;
+  const ms={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const p=d.trim().split(/[\s,]+/); const m=ms[p[0]]; const day=parseInt(p[1]);
+  return (isNaN(m)||isNaN(day))?null:{m,day};
+}
+function buildBdays(){
+  const grid=document.getElementById('bdayGrid');
+  const bm=Array.from({length:12},()=>[]);
+  // dedupe
+  const seen=new Set();
+  bdays.forEach(b=>{
+    const key=b.n+b.d;
+    if(seen.has(key)) return; seen.add(key);
+    const r=gmd(b.d); if(r) bm[r.m].push({n:b.n,day:r.day});
+  });
+  bm.forEach((entries,idx)=>{
+    const div=document.createElement('div'); div.className='bday-month';
+    const h=document.createElement('div'); h.className='bday-mname'; h.textContent=mnames[idx]; div.appendChild(h);
+    const list=document.createElement('div'); list.className='bday-list';
+    if(!entries.length){const e=document.createElement('div');e.className='bday-empty';e.textContent='No birthdays this month';list.appendChild(e);}
+    else entries.sort((a,b)=>a.day-b.day).forEach(e=>{
+      const row=document.createElement('div'); row.className='bday-entry';
+      row.innerHTML=`<span class="bday-day">${e.day}</span><span class="bday-name">${e.n}</span>`;
+      list.appendChild(row);
+    });
+    div.appendChild(list); grid.appendChild(div);
+  });
+}
+buildBdays();
+
+window.addEventListener('load',()=>setTimeout(drawAll,300));
+window.addEventListener('resize',()=>setTimeout(drawAll,100));
+</script>
+</body>
+</html>
