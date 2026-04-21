@@ -1,0 +1,43 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Rexford Family</title>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#3e2a10"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1200" height="9" fill="#c8a878"/>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="621" width="1200" height="9" fill="#c8a878"/>
+
+  <!-- Left decorative vertical line -->
+  <rect x="90" y="70" width="2.5" height="490" fill="#c8a878" opacity="0.4"/>
+
+  <!-- Right decorative vertical line -->
+  <rect x="1107.5" y="70" width="2.5" height="490" fill="#c8a878" opacity="0.4"/>
+
+  <!-- Tree motif -->
+  <g transform="translate(600, 130)">
+    <rect x="-5" y="30" width="10" height="50" fill="#c8a878" opacity="0.7" rx="3"/>
+    <ellipse cx="0" cy="14" rx="50" ry="36" fill="#c8a878" opacity="0.25"/>
+    <ellipse cx="0" cy="0" rx="36" ry="27" fill="#c8a878" opacity="0.35"/>
+    <ellipse cx="0" cy="-14" rx="23" ry="18" fill="#c8a878" opacity="0.5"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="306" text-anchor="middle" font-family="Georgia, serif" font-size="82" font-weight="700" fill="#f5e6cc" letter-spacing="4">Rexford Family</text>
+
+  <!-- Divider -->
+  <line x1="380" y1="336" x2="820" y2="336" stroke="#c8a878" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Subtitle -->
+  <text x="600" y="390" text-anchor="middle" font-family="Georgia, serif" font-size="32" font-weight="400" fill="#c8a878" letter-spacing="8" opacity="0.9">EST. 1946</text>
+
+  <!-- Decorative dots -->
+  <circle cx="348" cy="388" r="5" fill="#c8a878" opacity="0.5"/>
+  <circle cx="852" cy="388" r="5" fill="#c8a878" opacity="0.5"/>
+
+  <!-- Tagline -->
+  <text x="600" y="510" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="400" fill="#f5e6cc" opacity="0.5" letter-spacing="3">Family Tree · Birthdays · History</text>
+
+</svg>
